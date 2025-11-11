@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testnet Wallet Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Testnet Wallet Dashboard</h1>
+        
+        <!-- Connection Section -->
+        <div class="section">
+            <button id="connectWallet" class="btn-primary">Connect MetaMask</button>
+            <div id="walletInfo" class="hidden">
+                <h3>💰 Wallet Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Connected Address:</label>
+                        <span id="walletAddress" class="address"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>ETH Balance:</label>
+                        <span id="ethBalance" class="balance">0.00 ETH</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Network:</label>
+                        <span id="networkInfo"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Balance Simulator -->
+        <div class="section">
+            <h3>🎮 Simulate Custom Balance</h3>
+            <div class="simulator-controls">
+                <div class="input-group">
+                    <label>Set Custom ETH Balance:</label>
+                    <input type="number" id="customBalance" step="0.001" min="0" max="1000" placeholder="e.g., 19.99995222">
+                    <button id="setBalance" class="btn-secondary">Apply Balance</button>
+                </div>
+                <div class="input-group">
+                    <label>Simulate Transaction Amount:</label>
+                    <input type="number" id="transactionAmount" step="0.001" min="0" placeholder="e.g., 19.99995222">
+                    <button id="simulateTransaction" class="btn-primary">Simulate Transaction</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Display -->
+        <div id="transactionDisplay" class="section hidden">
+            <h3>📄 Transaction Details</h3>
+            
+            <div class="transaction-status">
+                <div class="status-confirmed">
+                    <span class="status-icon">✅</span>
+                    <strong>Confirmed</strong>
+                </div>
+                <div class="transaction-links">
+                    <a href="#" id="viewBlockExplorer" target="_blank" class="link">View on block explorer</a>
+                    <button id="copyTxId" class="btn-link">Copy transaction ID</button>
+                </div>
+            </div>
+
+            <div class="address-section">
+                <div class="address-item">
+                    <strong>From:</strong>
+                    <div class="address-selector">
+                        <label>
+                            <input type="radio" name="fromAddress" value="0x1A1cc...1737b" checked>
+                            <span class="address">0x1A1cc...1737b</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="fromAddress" value="Account 2">
+                            <span>Account 2</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transaction-table">
+                <table>
+                    <tr>
+                        <td><strong>Amount</strong></td>
+                        <td id="txAmount" class="amount-negative">-19.99995222 ETH</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gas Limit (Units)</strong></td>
+                        <td id="txGasLimit">21,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gas Used (Units)</strong></td>
+                        <td id="txGasUsed">21,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Base fee (GWEI)</strong></td>
+                        <td id="txBaseFee">0.000000001</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Priority fee (GWEI)</strong></td>
+                        <td id="txPriorityFee">2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total gas fee</strong></td>
+                        <td id="txTotalGasFee">0.000042 ETH <span class="usd">$0.15</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max fee per gas</strong></td>
+                        <td id="txMaxFee">0.000000002 ETH <span class="usd">$0.00</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Testnet Faucet -->
+        <div id="faucet-section" class="section hidden">
+            <h3>🚰 Get Test ETH</h3>
+            <button id="requestFaucet" class="btn-secondary">Get Test ETH from Faucet</button>
+        </div>
+
+        <!-- Instructions -->
+        <div class="section instructions">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Click "Connect MetaMask"</li>
+                <li>Approve connection in MetaMask</li>
+                <li>Set custom ETH balance above</li>
+                <li>Simulate transactions to see details</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
