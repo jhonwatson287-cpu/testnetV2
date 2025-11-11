@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testnet Wallet Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            background: #218838;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-item label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .address {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .balance {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 1.1em;
+        }
+
+        .simulator-controls {
+            display: grid;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .transaction-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .status-confirmed {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #155724;
+        }
+
+        .transaction-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .link, .btn-link {
+            color: #007bff;
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .address-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .address-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .address-selector label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .transaction-table {
+            margin: 20px 0;
+        }
+
+        .transaction-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transaction-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .amount-negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .usd {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .instructions {
+            background: #e7f3ff;
+            border-left-color: #17a2b8;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            color: #495057;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Testnet Wallet Dashboard</h1>
+        
+        <div class="section">
+            <button id="connectWallet" class="btn-primary">Connect MetaMask</button>
+            <div id="walletInfo" class="hidden">
+                <h3>💰 Wallet Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Connected Address:</label>
+                        <span id="walletAddress" class="address"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>ETH Balance:</label>
+                        <span id="ethBalance" class="balance">0.00 ETH</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Network:</label>
+                        <span id="networkInfo"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🎮 Simulate Custom Balance</h3>
+            <div class="simulator-controls">
+                <div class="input-group">
+                    <label>Set Custom ETH Balance:</label>
+                    <input type="number" id="customBalance" step="0.001" min="0" max="1000" placeholder="e.g., 19.99995222">
+                    <button id="setBalance" class="btn-secondary">Apply Balance</button>
+                </div>
+                <div class="input-group">
+                    <label>Simulate Transaction Amount:</label>
+                    <input type="number" id="transactionAmount" step="0.001" min="0" placeholder="e.g., 19.99995222">
+                    <button id="simulateTransaction" class="btn-primary">Simulate Transaction</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="transactionDisplay" class="section hidden">
+            <h3>📄 Transaction Details</h3>
+            
+            <div class="transaction-status">
+                <div class="status-confirmed">
+                    <span class="status-icon">✅</span>
+                    <strong>Confirmed</strong>
+                </div>
+                <div class="transaction-links">
+                    <a href="#" id="viewBlockExplorer" target="_blank" class="link">View on block explorer</a>
+                    <button id="copyTxId" class="btn-link">Copy transaction ID</button>
+                </div>
+            </div>
+
+            <div class="address-section">
+                <div class="address-item">
+                    <strong>From:</strong>
+                    <div class="address-selector">
+                        <label>
+                            <input type="radio" name="fromAddress" value="0x1A1cc...1737b" checked>
+                            <span class="address">0x1A1cc...1737b</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="fromAddress" value="Account 2">
+                            <span>Account 2</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transaction-table">
+                <table>
+                    <tr>
+                        <td><strong>Amount</strong></td>
+                        <td id="txAmount" class="amount-negative">-19.99995222 ETH</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gas Limit (Units)</strong></td>
+                        <td id="txGasLimit">21,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gas Used (Units)</strong></td>
+                        <td id="txGasUsed">21,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Base fee (GWEI)</strong></td>
+                        <td id="txBaseFee">0.000000001</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Priority fee (GWEI)</strong></td>
+                        <td id="txPriorityFee">2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total gas fee</strong></td>
+                        <td id="txTotalGasFee">0.000042 ETH <span class="usd">$0.15</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max fee per gas</strong></td>
+                        <td id="txMaxFee">0.000000002 ETH <span class="usd">$0.00</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="faucet-section" class="section hidden">
+            <h3>🚰 Get Test ETH</h3>
+            <button id="requestFaucet" class="btn-secondary">Get Test ETH from Faucet</button>
+        </div>
+
+        <div class="section instructions">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Click "Connect MetaMask"</li>
+                <li>Approve connection in MetaMask</li>
+                <li>Set custom ETH balance above</li>
+                <li>Simulate transactions to see details</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        class WalletConnector {
+            constructor() {
+                this.web3 = null;
+                this.account = null;
+                this.isConnected = false;
+                this.customBalance = '0.00';
+                
+                this.init();
+            }
+
+            async init() {
+                if (typeof window.ethereum !== 'undefined') {
+                    this.web3 = new Web3(window.ethereum);
+                    this.setupEventListeners();
+                    
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_accounts' 
+                    });
+                    if (accounts.length > 0) {
+                        this.account = accounts[0];
+                        this.isConnected = true;
+                        await this.updateWalletInfo();
+                        this.showWalletInfo();
+                    }
+                } else {
+                    this.showMetaMaskError();
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('connectWallet').addEventListener('click', () => {
+                    this.connectWallet();
+                });
+
+                document.getElementById('requestFaucet').addEventListener('click', () => {
+                    this.requestTestETH();
+                });
+
+                document.getElementById('setBalance').addEventListener('click', () => {
+                    this.setCustomBalance();
+                });
+
+                document.getElementById('simulateTransaction').addEventListener('click', () => {
+                    this.simulateTransaction();
+                });
+
+                document.getElementById('copyTxId').addEventListener('click', () => {
+                    this.copyTransactionId();
+                });
+
+                if (window.ethereum) {
+                    window.ethereum.on('accountsChanged', (accounts) => {
+                        if (accounts.length > 0) {
+                            this.account = accounts[0];
+                            this.updateWalletInfo();
+                        } else {
+                            this.disconnect();
+                        }
+                    });
+
+                    window.ethereum.on('chainChanged', (chainId) => {
+                        window.location.reload();
+                    });
+                }
+            }
+
+            async connectWallet() {
+                try {
+                    const connectBtn = document.getElementById('connectWallet');
+                    connectBtn.textContent = 'Connecting...';
+                    connectBtn.disabled = true;
+
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+
+                    this.account = accounts[0];
+                    this.isConnected = true;
+                    
+                    await this.switchToTestnet();
+                    await this.updateWalletInfo();
+                    this.showWalletInfo();
+                    
+                    connectBtn.textContent = 'Connected!';
+                    
+                } catch (error) {
+                    console.error('Error connecting wallet:', error);
+                    alert('Please approve the connection in MetaMask to continue.');
+                    this.resetConnectButton();
+                }
+            }
+
+            async switchToTestnet() {
+                const sepoliaChainId = '0xaa36a7';
+                
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: sepoliaChainId }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: sepoliaChainId,
+                                    chainName: 'Sepolia Test Network',
+                                    rpcUrls: ['https://sepolia.infura.io/v3/'],
+                                    nativeCurrency: {
+                                        name: 'Sepolia ETH',
+                                        symbol: 'ETH',
+                                        decimals: 18
+                                    },
+                                    blockExplorerUrls: ['https://sepolia.etherscan.io']
+                                }]
+                            });
+                        } catch (addError) {
+                            console.error('Error adding testnet:', addError);
+                        }
+                    }
+                }
+            }
+
+            setCustomBalance() {
+                const customBalanceInput = document.getElementById('customBalance');
+                const balance = customBalanceInput.value;
+                
+                if (balance && !isNaN(balance) && parseFloat(balance) >= 0) {
+                    this.customBalance = parseFloat(balance).toFixed(8);
+                    this.updateDisplayedBalance();
+                    alert(`Balance set to ${this.customBalance} ETH`);
+                } else {
+                    alert('Please enter a valid ETH amount');
+                }
+            }
+
+            updateDisplayedBalance() {
+                if (this.customBalance && this.customBalance !== '0.00') {
+                    document.getElementById('ethBalance').textContent = 
+                        `${this.customBalance} ETH`;
+                }
+            }
+
+            simulateTransaction() {
+                const txAmountInput = document.getElementById('transactionAmount');
+                const amount = txAmountInput.value;
+                
+                if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                    alert('Please enter a valid transaction amount');
+                    return;
+                }
+
+                this.updateTransactionDisplay(amount);
+                document.getElementById('transactionDisplay').classList.remove('hidden');
+                this.updateBalanceAfterTransaction(amount);
+            }
+
+            updateTransactionDisplay(amount) {
+                document.getElementById('txAmount').textContent = `-${parseFloat(amount).toFixed(8)} ETH`;
+                
+                const gasLimit = 21000;
+                const gasUsed = 21000;
+                const baseFee = (0.000000001).toFixed(9);
+                const priorityFee = '2';
+                const totalGasFee = '0.000042';
+                const usdValue = '0.15';
+
+                document.getElementById('txGasLimit').textContent = gasLimit.toLocaleString();
+                document.getElementById('txGasUsed').textContent = gasUsed.toLocaleString();
+                document.getElementById('txBaseFee').textContent = baseFee;
+                document.getElementById('txPriorityFee').textContent = priorityFee;
+                document.getElementById('txTotalGasFee').innerHTML = 
+                    `${totalGasFee} ETH <span class="usd">$${usdValue}</span>`;
+                document.getElementById('txMaxFee').innerHTML = 
+                    `0.000000002 ETH <span class="usd">$0.00</span>`;
+                
+                const txHash = '0x' + Math.random().toString(16).substr(2, 64);
+                document.getElementById('viewBlockExplorer').href = 
+                    `https://sepolia.etherscan.io/tx/${txHash}`;
+            }
+
+            updateBalanceAfterTransaction(amount) {
+                const currentBalance = parseFloat(this.customBalance || '0');
+                const txAmount = parseFloat(amount);
+                const gasFee = 0.000042;
+                
+                if (currentBalance >= (txAmount + gasFee)) {
+                    this.customBalance = (currentBalance - txAmount - gasFee).toFixed(8);
+                    this.updateDisplayedBalance();
+                } else {
+                    alert('Insufficient balance for this transaction');
+                }
+            }
+
+            copyTransactionId() {
+                const fakeTxId = '0x' + Math.random().toString(16).substr(2, 64);
+                navigator.clipboard.writeText(fakeTxId).then(() => {
+                    alert('Transaction ID copied to clipboard!');
+                });
+            }
+
+            async updateWalletInfo() {
+                if (!this.web3 || !this.account) return;
+
+                try {
+                    const balanceWei = await this.web3.eth.getBalance(this.account);
+                    const realBalanceEth = this.web3.utils.fromWei(balanceWei, 'ether');
+                    
+                    const displayBalance = this.customBalance !== '0.00' ? 
+                        this.customBalance : parseFloat(realBalanceEth).toFixed(4);
+                    
+                    const chainId = await this.web3.eth.getChainId();
+                    const networkName = this.getNetworkName(chainId);
+
+                    document.getElementById('walletAddress').textContent = 
+                        `${this.account.substring(0, 6)}...${this.account.substring(38)}`;
+                    document.getElementById('ethBalance').textContent = 
+                        `${displayBalance} ETH`;
+                    document.getElementById('networkInfo').textContent = 
+                        `${networkName} (${chainId})`;
+
+                    if (parseFloat(realBalanceEth) < 0.1 && this.isTestnet(chainId)) {
+                        document.getElementById('faucet-section').classList.remove('hidden');
+                    } else {
+                        document.getElementById('faucet-section').classList.add('hidden');
+                    }
+
+                } catch (error) {
+                    console.error('Error updating wallet info:', error);
+                }
+            }
+
+            getNetworkName(chainId) {
+                const networks = {
+                    1: 'Ethereum Mainnet',
+                    11155111: 'Sepolia Testnet',
+                    5: 'Goerli Testnet'
+                };
+                return networks[chainId] || `Network (${chainId})`;
+            }
+
+            isTestnet(chainId) {
+                const testnetIds = [11155111, 5];
+                return testnetIds.includes(chainId);
+            }
+
+            async requestTestETH() {
+                if (!this.account) return;
+                window.open(`https://sepoliafaucet.com/?address=${this.account}`, '_blank');
+            }
+
+            showWalletInfo() {
+                document.getElementById('walletInfo').classList.remove('hidden');
+                document.getElementById('connectWallet').style.display = 'none';
+            }
+
+            showMetaMaskError() {
+                const connectBtn = document.getElementById('connectWallet');
+                connectBtn.innerHTML = '⚠️ Install MetaMask';
+                connectBtn.style.backgroundColor = '#dc3545';
+                connectBtn.disabled = true;
+            }
+
+            resetConnectButton() {
+                const connectBtn = document.getElementById('connectWallet');
+                connectBtn.textContent = 'Connect MetaMask';
+                connectBtn.disabled = false;
+            }
+
+            disconnect() {
+                this.account = null;
+                this.isConnected = false;
+                document.getElementById('walletInfo').classList.add('hidden');
+                document.getElementById('connectWallet').style.display = 'block';
+                document.getElementById('faucet-section').classList.add('hidden');
+                this.resetConnectButton();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new WalletConnector();
+        });
+    </script>
+</body>
+</html>
